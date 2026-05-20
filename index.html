@@ -3703,18 +3703,22 @@ const compressImage = (file) => new Promise((resolve, reject) => {
 window.loadStorefrontData = async () => {
   try {
     const [prodSnap, secSnap, offSnap] = await Promise.all([
-      fdb().collection('products').where('is_visible','==',true).orderBy('display_order').get(),
+      fdb().collection('products').orderBy('display_order').get(),
       fdb().collection('sections').orderBy('display_order').get(),
-      fdb().collection('offers').where('is_visible','==',true).get(),
+      fdb().collection('offers').get(),
     ]);
     if (!prodSnap.empty) {
-      window.PRODUCTS = prodSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+      window.PRODUCTS = prodSnap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .filter(p => p.is_visible !== false);
     }
     if (!secSnap.empty) {
       window.SECTIONS = ['All', ...secSnap.docs.map(d => d.data().name)];
     }
     if (!offSnap.empty) {
-      window.OFFERS = offSnap.docs.map(d => ({ ...d.data(), id: d.id }));
+      window.OFFERS = offSnap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .filter(o => o.is_visible !== false);
     }
   } catch(e) {
     console.warn('[AC] Firestore load failed, using defaults:', e.message);
