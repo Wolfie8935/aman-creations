@@ -3605,7 +3605,7 @@ const OffersSection = () => {
 
         <div className="offers-grid reveal-stagger">
           {offers.map((offer) => {
-            const products = offer.productIds.map(id => window.PRODUCTS.find(p => p.id === id));
+            const products = (offer.productIds || []).map(id => window.PRODUCTS.find(p => p.id === id)).filter(Boolean);
             return (
               <article key={offer.id} className="offer-card">
                 <div className="offer-visual">
@@ -3712,14 +3712,16 @@ window.loadStorefrontData = async () => {
         .map(d => ({ ...d.data(), id: d.id }))
         .filter(p => p.is_visible !== false);
     }
+    // Hero hardcodes [0],[2],[3] — pad so those indexes are never undefined
+    const _ph = { motif:'flora', palette:['#c9a84c','#8c7637','#e8d5a3'], id:'_ph', name:'', section:'', price:0, short:'', code:'', imageData:[] };
+    while (window.PRODUCTS.length < 4) window.PRODUCTS.push(_ph);
     if (!secSnap.empty) {
       window.SECTIONS = ['All', ...secSnap.docs.map(d => d.data().name)];
     }
-    if (!offSnap.empty) {
-      window.OFFERS = offSnap.docs
-        .map(d => ({ ...d.data(), id: d.id }))
-        .filter(o => o.is_visible !== false);
-    }
+    // Always replace OFFERS (even if empty) so stale default offers with wrong IDs don't render
+    window.OFFERS = offSnap.docs
+      .map(d => ({ ...d.data(), id: d.id }))
+      .filter(o => o.is_visible !== false);
   } catch(e) {
     console.warn('[AC] Firestore load failed, using defaults:', e.message);
   }
