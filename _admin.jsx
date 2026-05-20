@@ -80,6 +80,18 @@ window.loadStorefrontData = async () => {
 
 window.syncAdminToStorefront = () => window.loadStorefrontData();
 
+// Convert YouTube/Vimeo watch URLs to embed URLs
+const toEmbedUrl = (url) => {
+  if (!url) return null;
+  // YouTube: watch?v=ID or youtu.be/ID
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?rel=0`;
+  // Vimeo: vimeo.com/ID
+  const vm = url.match(/vimeo\.com\/(\d+)/);
+  if (vm) return `https://player.vimeo.com/video/${vm[1]}`;
+  return null;
+};
+
 // ─── Override ProductCard / ProductModal for real image URLs ─────────────────
 const _OrigPC = window.ProductCard;
 const _OrigPM = window.ProductModal;
@@ -129,6 +141,7 @@ window.ProductModal = ({ product, onClose, onAddToCart }) => {
   React.useEffect(() => { if (product) { setQty(1); setImgIdx(0); } }, [product?.id]);
   if (!product) return null;
   const urls = product.imageData;
+  const embedUrl = toEmbedUrl(product.videoUrl);
   if (!urls || !urls.length) return <_OrigPM product={product} onClose={onClose} onAddToCart={onAddToCart} />;
   return (
     <div className="product-modal open">
@@ -147,6 +160,14 @@ window.ProductModal = ({ product, onClose, onAddToCart }) => {
                     <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
                   </div>
                 ))}
+              </div>
+            )}
+            {embedUrl && (
+              <div style={{ marginTop:12, position:'relative', paddingBottom:'56.25%', height:0, overflow:'hidden' }}>
+                <iframe src={embedUrl} title="Product video"
+                  style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', border:'none' }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen />
               </div>
             )}
           </div>
@@ -493,6 +514,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
     palette:      product?.palette || ['#c9a84c','#8c7637','#e8d5a3'],
     // images: array of {type:'existing',data:base64} or {type:'new',file,preview}
     images: (product?.imageData || []).map(data => ({ type:'existing', data })),
+    videoUrl: product?.videoUrl || '',
   });
   const [saving, setSaving] = React.useState(false);
   const fileRef = React.useRef();
@@ -531,6 +553,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
         motif: form.motif,
         palette: form.palette,
         imageData,
+        videoUrl: form.videoUrl.trim() || null,
         code: product?.code || genCode(totalProducts + 1),
       });
     } catch(err) {
@@ -637,6 +660,13 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
               ))}
             </div>
           )}
+        </div>
+
+        <div className="adm-field" style={{ marginTop:16 }}>
+          <label>Product Video <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(YouTube or Vimeo URL — shown in product detail)</span></label>
+          <input value={form.videoUrl} onChange={e=>set('videoUrl',e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=... or https://vimeo.com/..." />
+          <div className="adm-field-hint">Paste a YouTube or Vimeo link. The video will appear below the images in the product detail view.</div>
         </div>
 
         <hr className="adm-divider" />
