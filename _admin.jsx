@@ -138,7 +138,8 @@ window.ProductCard = (props) => {
 window.ProductModal = ({ product, onClose, onAddToCart }) => {
   const [qty, setQty] = React.useState(1);
   const [imgIdx, setImgIdx] = React.useState(0);
-  React.useEffect(() => { if (product) { setQty(1); setImgIdx(0); } }, [product?.id]);
+  const [selectedSize, setSelectedSize] = React.useState(null);
+  React.useEffect(() => { if (product) { setQty(1); setImgIdx(0); setSelectedSize(null); } }, [product?.id]);
   if (!product) return null;
   const urls = product.imageData;
   const embedUrl = toEmbedUrl(product.videoUrl);
@@ -180,6 +181,25 @@ window.ProductModal = ({ product, onClose, onAddToCart }) => {
             <p className="pm-desc">{product.short}</p>
             <div className="pm-divider" />
             <div className="pm-price"><span style={{ fontSize:28, opacity:.85 }}>₹</span>{product.price.toLocaleString('en-IN')}</div>
+            {product.sizes && product.sizes.length > 0 && (
+              <>
+                <div className="pm-divider" />
+                <div className="pm-section-label">Select Size</div>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:8 }}>
+                  {product.sizes.map(s => (
+                    <button key={s} type="button"
+                      onClick={() => setSelectedSize(s === selectedSize ? null : s)}
+                      style={{
+                        padding:'6px 16px', border:'1px solid', cursor:'pointer', fontSize:13,
+                        fontFamily:'var(--font-body)', letterSpacing:'.06em', transition:'all .15s',
+                        background: s === selectedSize ? 'var(--gold)' : 'transparent',
+                        color: s === selectedSize ? '#18130a' : 'var(--text)',
+                        borderColor: s === selectedSize ? 'var(--gold)' : 'var(--border-strong)',
+                      }}>{s}</button>
+                  ))}
+                </div>
+              </>
+            )}
             <div className="pm-divider" />
             <div className="pm-section-label">Details</div>
             <p className="pm-long">{product.long}</p>
@@ -193,11 +213,15 @@ window.ProductModal = ({ product, onClose, onAddToCart }) => {
                 <span>{qty}</span>
                 <button onClick={() => setQty(qty+1)}>+</button>
               </div>
-              <button className="btn btn-gold pm-add" onClick={() => { onAddToCart(product,qty); onClose(); }}>
-                Add to Cart · ₹{(product.price*qty).toLocaleString('en-IN')}
+              <button className="btn btn-gold pm-add"
+                disabled={product.sizes && product.sizes.length > 0 && !selectedSize}
+                onClick={() => { onAddToCart(product, qty, selectedSize); onClose(); }}>
+                {product.sizes && product.sizes.length > 0 && !selectedSize
+                  ? 'Select a Size'
+                  : `Add to Cart · ₹${(product.price*qty).toLocaleString('en-IN')}`}
               </button>
               <button className="btn btn-ghost pm-whats" onClick={() =>
-                openWhatsApp(`Hi! I'm interested in *${product.name}* (ID: #${product.code}). Can you tell me more?`)}>
+                openWhatsApp(`Hi! I'm interested in *${product.name}*${selectedSize ? ` (Size: ${selectedSize})` : ''} (ID: #${product.code}). Can you tell me more?`)}>
                 <Icon name="whatsapp" size={14} /> Ask on WhatsApp
               </button>
             </div>
@@ -278,8 +302,8 @@ _adminCss.textContent = `
 .adm-field textarea { resize:vertical; min-height:80px; }
 .adm-field select option { background:#1a1a1a; }
 .adm-field-hint { font-size:11px; color:var(--text-dim); margin-top:2px; }
-.adm-upload-zone { border:1.5px dashed var(--border); padding:28px; text-align:center; cursor:pointer; transition:border-color .2s; }
-.adm-upload-zone:hover { border-color:var(--gold); }
+.adm-upload-zone { border:1.5px dashed var(--border); padding:28px; text-align:center; cursor:pointer; transition:border-color .2s, background .2s; }
+.adm-upload-zone:hover, .adm-upload-zone.drag-over { border-color:var(--gold); background:rgba(201,168,76,.04); }
 .adm-upload-zone p { color:var(--text-dim); font-size:13px; margin:0; }
 .adm-upload-zone small { font-size:11px; color:var(--text-dim); opacity:.6; margin-top:4px; display:block; }
 .adm-img-previews { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
@@ -290,6 +314,18 @@ _adminCss.textContent = `
   display:flex; align-items:center; justify-content:center; border-radius:2px; }
 .adm-img-cover { position:absolute; bottom:2px; left:2px; background:var(--gold);
   color:#18130a; font-size:8px; padding:1px 4px; letter-spacing:.1em; text-transform:uppercase; }
+.adm-upload-progress { margin-top:14px; }
+.adm-upload-progress-bar-wrap { background:var(--surface-2); height:6px; border-radius:3px; overflow:hidden; margin-bottom:6px; }
+.adm-upload-progress-bar { height:100%; background:var(--gold); border-radius:3px; transition:width .18s ease; }
+.adm-upload-progress-label { font-size:11px; color:var(--text-dim); display:flex; justify-content:space-between; }
+.adm-size-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.adm-size-chip { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); color:var(--gold-light); padding:4px 10px; font-size:11px; letter-spacing:.08em; }
+.adm-size-chip button { background:none; border:none; color:inherit; cursor:pointer; padding:0; font-size:13px; line-height:1; opacity:.7; }
+.adm-size-chip button:hover { opacity:1; }
+.adm-size-input-row { display:flex; gap:8px; margin-top:8px; }
+.adm-size-input-row input { flex:1; }
+.adm-size-input-row button { background:var(--surface-2); border:1px solid var(--border); color:var(--text-dim); padding:0 14px; font-size:12px; cursor:pointer; white-space:nowrap; }
+.adm-size-input-row button:hover { border-color:var(--gold); color:var(--gold); }
 .adm-toggle { display:flex; align-items:center; gap:10px; cursor:pointer; }
 .adm-toggle-track { width:36px; height:20px; border-radius:10px; background:#333; position:relative; transition:background .2s; flex-shrink:0; }
 .adm-toggle-track.on { background:var(--gold); }
@@ -515,22 +551,41 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
     // images: array of {type:'existing',data:base64} or {type:'new',file,preview}
     images: (product?.imageData || []).map(data => ({ type:'existing', data })),
     videoUrl: product?.videoUrl || '',
+    sizes: product?.sizes || [],
   });
+  const [sizeInput, setSizeInput] = React.useState('');
   const [saving, setSaving] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState({ done: 0, total: 0 });
+  const [dragOver, setDragOver] = React.useState(false);
   const fileRef = React.useRef();
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const addFiles = async (files) => {
-    const remaining = 10 - form.images.length;
-    const toProcess = Array.from(files).slice(0, remaining);
-    const compressed = await Promise.all(toProcess.map(async f => ({
-      type: 'new', data: await compressImage(f),
-    })));
-    set('images', [...form.images, ...compressed]);
+    const toProcess = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (!toProcess.length) return;
+    setUploading(true);
+    setUploadProgress({ done: 0, total: toProcess.length });
+    const compressed = [];
+    for (const f of toProcess) {
+      const data = await compressImage(f);
+      compressed.push({ type: 'new', data });
+      setUploadProgress(p => ({ ...p, done: p.done + 1 }));
+    }
+    setForm(prev => ({ ...prev, images: [...prev.images, ...compressed] }));
+    setUploading(false);
   };
 
   const removeImg = (i) => set('images', form.images.filter((_,idx) => idx !== i));
+
+  const addSize = () => {
+    const val = sizeInput.trim().toUpperCase();
+    if (!val || form.sizes.includes(val)) { setSizeInput(''); return; }
+    set('sizes', [...form.sizes, val]);
+    setSizeInput('');
+  };
+  const removeSize = (s) => set('sizes', form.sizes.filter(x => x !== s));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -554,6 +609,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
         palette: form.palette,
         imageData,
         videoUrl: form.videoUrl.trim() || null,
+        sizes: form.sizes.length ? form.sizes : null,
         code: product?.code || genCode(totalProducts + 1),
       });
     } catch(err) {
@@ -638,14 +694,28 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
         <hr className="adm-divider" />
 
         <div className="adm-field">
-          <label>Product Images <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(max 10 · first = cover · stored in Firebase Storage)</span></label>
-          <div className="adm-upload-zone"
-            onClick={() => fileRef.current && fileRef.current.click()}
-            onDrop={e => { e.preventDefault(); if(e.dataTransfer.files.length) addFiles(e.dataTransfer.files); }}
-            onDragOver={e => e.preventDefault()}>
-            <p>Drag & drop images here, or click to browse</p>
-            <small>JPG, PNG, WebP · Up to {10 - form.images.length} more</small>
+          <label>Product Images <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(first = cover · JPG, PNG, WebP)</span></label>
+          <div className={"adm-upload-zone" + (dragOver ? " drag-over" : "")}
+            onClick={() => !uploading && fileRef.current && fileRef.current.click()}
+            onDrop={e => { e.preventDefault(); setDragOver(false); if(e.dataTransfer.files.length) addFiles(e.dataTransfer.files); }}
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDragEnd={() => setDragOver(false)}>
+            <p>{uploading ? `Processing images… (${uploadProgress.done} / ${uploadProgress.total})` : "Drag & drop images here, or click to browse"}</p>
+            <small>{uploading ? "Please wait" : "Any number of images · no limit"}</small>
           </div>
+          {uploading && (
+            <div className="adm-upload-progress">
+              <div className="adm-upload-progress-bar-wrap">
+                <div className="adm-upload-progress-bar"
+                  style={{ width: uploadProgress.total ? `${Math.round(uploadProgress.done / uploadProgress.total * 100)}%` : '0%' }} />
+              </div>
+              <div className="adm-upload-progress-label">
+                <span>Compressing &amp; optimising</span>
+                <span>{uploadProgress.total ? Math.round(uploadProgress.done / uploadProgress.total * 100) : 0}%</span>
+              </div>
+            </div>
+          )}
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
             multiple style={{ display:'none' }}
             onChange={e => { if(e.target.files.length) addFiles(e.target.files); e.target.value=''; }} />
@@ -660,6 +730,26 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
               ))}
             </div>
           )}
+        </div>
+
+        <div className="adm-field" style={{ marginTop:16 }}>
+          <label>Sizes <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(optional — leave blank if one-size or not applicable)</span></label>
+          {form.sizes.length > 0 && (
+            <div className="adm-size-chips">
+              {form.sizes.map(s => (
+                <span key={s} className="adm-size-chip">
+                  {s} <button type="button" onClick={() => removeSize(s)}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+          <div className="adm-size-input-row">
+            <input value={sizeInput} onChange={e => setSizeInput(e.target.value)}
+              placeholder="e.g. S, M, L, XL or Free Size"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addSize(); } }} />
+            <button type="button" onClick={addSize}>+ Add Size</button>
+          </div>
+          <div className="adm-field-hint">Press Enter or comma after each size. Click × to remove. Example: XS · S · M · L · XL · XXL</div>
         </div>
 
         <div className="adm-field" style={{ marginTop:16 }}>
