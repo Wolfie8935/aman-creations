@@ -3584,7 +3584,9 @@ const CartSidebar = ({ open, onClose, items, onQty, onRemove, onCheckout }) => {
             items.map((it) => (
               <div key={it.id} className="cart-item">
                 <div className="cart-item-img">
-                  <ProductImage motif={it.motif} palette={it.palette} variant={0} />
+                  {it.imageUrl
+                    ? <img src={it.imageUrl} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                    : <ProductImage motif={it.motif} palette={it.palette} variant={0} />}
                 </div>
                 <div className="cart-item-body">
                   <div className="cart-item-name">{it.name}</div>
@@ -5611,7 +5613,7 @@ const App = () => {
       return [...prev, {
         id: cartId, code: product.code, name: displayName,
         price: product.price, qty, motif: product.motif, palette: product.palette,
-        size,
+        size, imageUrl: (product.imageData && product.imageData[0]) || null,
       }];
     });
     pushToast(`Added “${displayName}” to cart`);
