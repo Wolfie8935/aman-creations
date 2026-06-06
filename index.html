@@ -328,6 +328,19 @@ section { position: relative; }
   margin-bottom: 4px;
 }
 
+/* Faint royal ornament behind the hero headline */
+.hero-ornament {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: .05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 100 100'><g fill='none' stroke='%23C9A84C' stroke-width='0.6'><path d='M50 8 C66 22 66 40 50 54 C34 40 34 22 50 8 Z'/><circle cx='50' cy='30' r='4'/><path d='M50 54 L50 78'/><path d='M50 78 C44 70 36 70 30 76 M50 78 C56 70 64 70 70 76'/></g></svg>");
+  background-size: 220px 220px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 0%, transparent 70%);
+          mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 0%, transparent 70%);
+}
+
 /* Hero visual */
 .hero-visual {
   position: relative;
@@ -341,14 +354,52 @@ section { position: relative; }
   position: absolute;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,.04) inset;
   transition: transform .8s cubic-bezier(.2,.7,.2,1);
 }
+.hero-card-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .hero-card-main {
   inset: 6% 12% 6% 12%;
   z-index: 3;
+  border-color: var(--border-strong);
+  box-shadow: 0 40px 90px -28px rgba(0,0,0,0.7), var(--shadow-gold), 0 0 0 1px rgba(201,168,76,.08) inset;
 }
+/* When only one product exists, center the main card a touch wider */
+.hero-visual--solo .hero-card-main { inset: 4% 8% 4% 8%; }
+
+/* Floating name + price chip on the main hero card */
+.hero-card-chip {
+  position: absolute;
+  left: 14px; bottom: 14px; right: 14px;
+  z-index: 4;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 15px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(13,13,13,.55), rgba(13,13,13,.82));
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+}
+.hero-chip-name {
+  font-family: var(--font-accent);
+  font-size: 17px;
+  color: var(--text);
+  line-height: 1.2;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hero-chip-price {
+  flex-shrink: 0;
+  font-family: var(--font-accent);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--gold-light);
+}
+.hero-chip-price .rupee { font-size: 13px; opacity: .8; margin-right: 1px; }
 .hero-card-bg1 {
   top: 2%; left: 0; width: 56%; aspect-ratio: 3/4;
   transform: rotate(-7deg) translateY(8%);
@@ -591,6 +642,30 @@ section { position: relative; }
   background: rgba(245,240,232,.4);
 }
 .image-dots span.active { background: var(--gold); width: 18px; border-radius: 3px; }
+
+/* ───────── Royal polish layer ───────── */
+/* Anchored sections shouldn't hide under the fixed navbar on smooth-scroll */
+#home, #collections, #contact, #offers { scroll-margin-top: 88px; }
+
+/* A fine gold accent line slides in across the card on hover */
+.product-card::after {
+  content: ""; position: absolute; left: 0; top: 0; height: 2px; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0); transform-origin: left; transition: transform .5s cubic-bezier(.2,.7,.2,1);
+  z-index: 3;
+}
+.product-card:hover::after { transform: scaleX(1); }
+
+/* Decorative flourish under each section title */
+.section-title { position: relative; }
+.section-head-lead .section-title::after {
+  content: ""; display: block; margin-top: 18px; width: 56px; height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* Tactile primary add button */
+.product-card-add { border-radius: 7px; }
+.product-card-add:hover { box-shadow: 0 8px 20px -10px rgba(201,168,76,.7); }
 
 /* ───────── Offers ───────── */
 .offers-grid {
@@ -1432,14 +1507,21 @@ html.js-reveal-ready .reveal-stagger.visible > * { opacity: 1; transform: transl
   <style>
     /* â”€â”€ Mobile fixes â”€â”€ */
     @media (max-width: 600px) {
-      /* Hero */
-      .hero { min-height: auto !important; padding-top: 80px !important; padding-bottom: 32px !important; }
-      .hero-visual { display: none !important; }
-      .hero-grid { gap: 0 !important; }
-      .hero-headline { font-size: clamp(28px, 8.5vw, 44px) !important; }
-      .hero-sub { font-size: 14px !important; margin-top: 16px !important; }
-      .hero-ctas { margin-top: 24px !important; }
-      .hero-meta { margin-top: 28px !important; flex-wrap: wrap !important; gap: 16px 28px !important; }
+      /* Hero — mobile-first: text centered, one elegant photo card below */
+      .hero { min-height: auto !important; padding-top: 92px !important; padding-bottom: 40px !important; }
+      .hero-grid { gap: 36px !important; text-align: center !important; }
+      .hero-text { display: flex; flex-direction: column; align-items: center; }
+      .hero-headline { font-size: clamp(30px, 9vw, 46px) !important; }
+      .hero-sub { font-size: 15px !important; margin-top: 16px !important; }
+      .hero-ctas { margin-top: 26px !important; justify-content: center !important; width: 100%; }
+      .hero-ctas .btn { flex: 1 1 auto; justify-content: center; }
+      .hero-meta { margin-top: 30px !important; justify-content: center !important; flex-wrap: wrap !important; gap: 18px 30px !important; }
+      /* Show the hero visual on mobile as a single centered card (was hidden) */
+      .hero-visual { display: flex !important; aspect-ratio: 1/1 !important; max-width: 320px !important; margin: 0 auto !important; }
+      .hero-card-bg1, .hero-card-bg2 { display: none !important; }
+      .hero-card-main { inset: 0 !important; }
+      .hero-decor-ring { width: 240px !important; height: 240px !important; top: -6% !important; right: -8% !important; }
+      .hero-ornament { background-size: 160px 160px !important; }
 
       /* Reduce all section padding */
       .section-pad { padding: 48px 0 !important; }
@@ -2846,17 +2928,41 @@ const Navbar = ({ cartCount, onCartClick, onWhatsApp, onSectionClick, onMenuTogg
 };
 
 // ───────────── Hero ─────────────
+// Pick up to 3 products to showcase in the hero.
+// Priority: products marked is_featured → else first visible real products.
+// Always filters out the '_ph' padding placeholder so it can never render an empty card.
+const pickHeroProducts = () => {
+  const all = (window.PRODUCTS || []).filter(p => p && p.id !== '_ph' && p.is_visible !== false);
+  const featured = all.filter(p => p.is_featured);
+  const pool = featured.length ? featured : all;
+  return pool.slice(0, 3);
+};
+
+// One hero card's media: real cover photo when present, elegant SVG art otherwise.
+const HeroCardMedia = ({ product, variant = 0 }) => {
+  const url = product && product.imageData && product.imageData.length ? product.imageData[0] : null;
+  if (url) return <img className="hero-card-img" src={url} alt={product.name || "Featured gift"} loading="eager" />;
+  return (
+    <ProductImage
+      motif={(product && product.motif) || "flora"}
+      palette={(product && product.palette) || ["#c9a84c", "#8c7637", "#e8d5a3"]}
+      variant={variant}
+    />
+  );
+};
+
 const Hero = ({ headline, sub, onExplore, onWhatsApp, layout = "split" }) => {
-  // Pick 3 products for hero visual stack
-  const heroProducts = [
-    window.PRODUCTS[0], // Tunic
-    window.PRODUCTS[2], // Hamper
-    window.PRODUCTS[3], // Pashmina
-  ];
+  const heroProducts = pickHeroProducts();
+  const fallback = { motif: "flora", palette: ["#c9a84c", "#8c7637", "#e8d5a3"], name: "", price: 0, imageData: [] };
+  const main = heroProducts[0] || fallback;
+  const bg1  = heroProducts[1] || null;
+  const bg2  = heroProducts[2] || null;
+  const hasStack = !!(bg1 || bg2);
 
   return (
     <section className="hero" id="home">
       <div className="hero-bg" />
+      <div className="hero-ornament" aria-hidden="true" />
       <div className="container">
         <div className={"hero-grid " + (layout === "centered" ? "hero-grid--centered" : "")}>
           <div className="hero-text reveal">
@@ -2880,22 +2986,36 @@ const Hero = ({ headline, sub, onExplore, onWhatsApp, layout = "split" }) => {
             </div>
 
             <div className="hero-meta">
-              <div className="hero-meta-item"><b>500<span style={{fontSize:'18px',color:'#c9a84c'}}>+</span></b>Happy clients</div>
+              <div className="hero-meta-item"><b>500<span style={{fontSize:'18px',color:'var(--gold)'}}>+</span></b>Happy clients</div>
               <div className="hero-meta-item"><b>14yr</b>Of craft</div>
               <div className="hero-meta-item"><b>42</b>Karigars</div>
             </div>
           </div>
 
-          <div className="hero-visual reveal" style={{ transitionDelay: ".15s" }}>
+          <div className={"hero-visual reveal" + (hasStack ? "" : " hero-visual--solo")} style={{ transitionDelay: ".15s" }}>
             <div className="hero-decor-ring" />
-            <div className="hero-card hero-card-bg1">
-              <ProductImage motif={heroProducts[1].motif} palette={heroProducts[1].palette} variant={1} />
-            </div>
-            <div className="hero-card hero-card-bg2">
-              <ProductImage motif={heroProducts[2].motif} palette={heroProducts[2].palette} variant={2} />
-            </div>
+            {bg1 && (
+              <div className="hero-card hero-card-bg1">
+                <HeroCardMedia product={bg1} variant={1} />
+              </div>
+            )}
+            {bg2 && (
+              <div className="hero-card hero-card-bg2">
+                <HeroCardMedia product={bg2} variant={2} />
+              </div>
+            )}
             <div className="hero-card hero-card-main">
-              <ProductImage motif={heroProducts[0].motif} palette={heroProducts[0].palette} variant={0} />
+              <HeroCardMedia product={main} variant={0} />
+              {main.name && (
+                <div className="hero-card-chip">
+                  <span className="hero-chip-name">{main.name}</span>
+                  {main.price ? (
+                    <span className="hero-chip-price">
+                      <span className="rupee">₹</span>{Number(main.price).toLocaleString("en-IN")}
+                    </span>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -4133,13 +4253,64 @@ _adminCss.textContent = `
 .adm-sf-link:hover { color:var(--gold); }
 .adm-spinner { width:22px; height:22px; border:2px solid var(--border); border-top-color:var(--gold);
   border-radius:50%; animation:spin .7s linear infinite; margin:40px auto; display:block; }
-@media (max-width:760px) {
-  .admin-layout { flex-direction:column; }
-  .adm-sidebar { width:100%; height:auto; position:relative; }
-  .adm-main { width:100%; }
-  .adm-content { padding:20px; }
+
+/* ── Royal admin polish ── */
+.admin-layout { background:radial-gradient(ellipse 90% 60% at 80% -10%, rgba(201,168,76,.06), transparent 60%), var(--bg); }
+.adm-sidebar { background:linear-gradient(180deg,#100f0d,#0b0b0b); }
+.adm-sidebar-logo { padding:26px 22px 18px; }
+.adm-nav-item { border-radius:0 22px 22px 0; margin-right:12px; }
+.adm-nav-item.active { background:linear-gradient(90deg,rgba(201,168,76,.16),rgba(201,168,76,.04)); }
+.adm-topbar { background:rgba(10,10,10,.86); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+.adm-stat { border-radius:14px; background:linear-gradient(160deg,var(--surface),#151412);
+  position:relative; overflow:hidden; transition:border-color .2s, transform .2s; }
+.adm-stat:hover { border-color:var(--border-strong); transform:translateY(-2px); }
+.adm-stat::after { content:""; position:absolute; top:-30px; right:-30px; width:90px; height:90px;
+  border-radius:50%; background:radial-gradient(circle,rgba(201,168,76,.16),transparent 70%); }
+.adm-stat-num { font-size:42px; }
+.adm-stat, .adm-table, .adm-notice, .admin-login-card, .adm-img-preview, .adm-thumb { border-radius:14px; }
+.adm-thumb { border-radius:8px; }
+.adm-table { overflow:hidden; }
+.adm-table thead th { background:rgba(255,255,255,.02); }
+.adm-btn { border-radius:8px; padding:7px 13px; }
+.adm-btn-primary { box-shadow:0 8px 22px -10px rgba(201,168,76,.6); }
+.adm-field input, .adm-field select, .adm-field textarea, .adm-search { border-radius:9px; }
+.adm-upload-zone { border-radius:12px; }
+.adm-img-preview { border-radius:10px; }
+
+/* Featured star toggle in product list */
+.adm-star { background:none; border:none; cursor:pointer; font-size:20px; line-height:1;
+  color:var(--text-dim); padding:2px 4px; transition:color .15s, transform .15s; }
+.adm-star:hover { transform:scale(1.18); color:var(--gold); }
+.adm-star.active { color:var(--gold); text-shadow:0 0 12px rgba(201,168,76,.55); }
+
+/* Grouped form section headings */
+.adm-form-section { grid-column:1/-1; display:flex; align-items:center; gap:12px; margin:6px 0 2px; }
+.adm-form-section span { font-family:var(--font-accent); font-size:16px; letter-spacing:.04em; color:var(--gold-light); white-space:nowrap; }
+.adm-form-section::after { content:""; flex:1; height:1px; background:var(--border); }
+
+/* Mobile drawer plumbing */
+.adm-hamburger { display:none; }
+.adm-drawer-backdrop { display:none; }
+
+@media (max-width:860px) {
+  .adm-hamburger { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px;
+    border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--gold);
+    font-size:18px; cursor:pointer; flex-shrink:0; }
+  .adm-topbar { padding:12px 16px; gap:12px; }
+  .adm-content { padding:18px 16px 60px; }
+  .adm-sidebar { position:fixed; top:0; left:0; height:100vh; width:248px; z-index:120;
+    transform:translateX(-100%); transition:transform .28s cubic-bezier(.2,.7,.2,1); box-shadow:0 0 60px rgba(0,0,0,.7); }
+  .admin-layout.drawer-open .adm-sidebar { transform:translateX(0); }
+  .admin-layout.drawer-open .adm-drawer-backdrop { display:block; position:fixed; inset:0; z-index:110;
+    background:rgba(0,0,0,.55); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); }
   .adm-form-grid { grid-template-columns:1fr; }
   .adm-form-grid .full { grid-column:1; }
+  .adm-form { max-width:100%; }
+  /* Product table scrolls horizontally instead of breaking layout */
+  .adm-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:14px; }
+  .adm-table { min-width:680px; }
+  .adm-page-head { flex-wrap:wrap; gap:12px; }
+  .adm-search { width:100%; }
 }
 `;
 document.head.appendChild(_adminCss);
@@ -4225,6 +4396,10 @@ const AdminOverview = ({ products, sections, offers }) => (
         <div className="adm-stat-label">Visible</div>
       </div>
       <div className="adm-stat">
+        <div className="adm-stat-num">{products.filter(p=>p.is_featured).length}</div>
+        <div className="adm-stat-label">Featured</div>
+      </div>
+      <div className="adm-stat">
         <div className="adm-stat-num">{sections.length}</div>
         <div className="adm-stat-label">Sections</div>
       </div>
@@ -4241,7 +4416,7 @@ const AdminOverview = ({ products, sections, offers }) => (
 );
 
 // ─── ProductsList ─────────────────────────────────────────────────────────────
-const ProductsList = ({ products, sections, onEdit, onDelete, onToggle, onAdd }) => {
+const ProductsList = ({ products, sections, onEdit, onDelete, onToggle, onToggleFeatured, onAdd }) => {
   const [q, setQ]     = React.useState('');
   const [sec, setSec] = React.useState('All');
   const filtered = products.filter(p => {
@@ -4268,9 +4443,10 @@ const ProductsList = ({ products, sections, onEdit, onDelete, onToggle, onAdd })
       {filtered.length === 0 ? (
         <div style={{ padding:'40px 0', textAlign:'center', color:'var(--text-dim)' }}>No products found.</div>
       ) : (
+        <div className="adm-table-wrap">
         <table className="adm-table">
           <thead>
-            <tr><th>Image</th><th>Name</th><th>Code</th><th>Section</th><th>Price</th><th>Status</th><th>Visible</th><th>Actions</th></tr>
+            <tr><th>Image</th><th>Name</th><th>Code</th><th>Section</th><th>Price</th><th>Status</th><th>Featured</th><th>Visible</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {filtered.map(p => (
@@ -4291,6 +4467,15 @@ const ProductsList = ({ products, sections, onEdit, onDelete, onToggle, onAdd })
                     {p.stock_status==='in_stock'?'In Stock':p.stock_status==='out_of_stock'?'Out of Stock':'Made to Order'}
                   </span>
                 </td>
+                <td>
+                  <button
+                    className={"adm-star "+(p.is_featured ? 'active' : '')}
+                    onClick={()=>onToggleFeatured(p.id, p.is_featured)}
+                    title={p.is_featured ? 'Featured on homepage — click to remove' : 'Click to feature on homepage'}
+                    aria-label="Toggle featured">
+                    {p.is_featured ? '★' : '☆'}
+                  </button>
+                </td>
                 <td><AdmToggle value={p.is_visible!==false} onChange={()=>onToggle(p.id, p.is_visible)} /></td>
                 <td>
                   <div className="adm-actions">
@@ -4302,6 +4487,7 @@ const ProductsList = ({ products, sections, onEdit, onDelete, onToggle, onAdd })
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );
@@ -4320,6 +4506,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
     badge:        product?.badge || '',
     stock_status: product?.stock_status || 'in_stock',
     is_visible:   product?.is_visible !== false,
+    is_featured:  product?.is_featured || false,
     motif:        product?.motif || 'flora',
     palette:      product?.palette || ['#c9a84c','#8c7637','#e8d5a3'],
     // images: array of {type:'existing',data:base64} or {type:'new',file,preview}
@@ -4379,6 +4566,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
         badge: form.badge.trim() || null,
         stock_status: form.stock_status,
         is_visible: form.is_visible,
+        is_featured: form.is_featured,
         motif: form.motif,
         palette: form.palette,
         imageData,
@@ -4403,6 +4591,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
       </div>
       <form className="adm-form" onSubmit={handleSubmit}>
         <div className="adm-form-grid">
+          <div className="adm-form-section"><span>Basics</span></div>
           <div className="adm-field full">
             <label>Product Name *</label>
             <input value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Chikankari Tunic" />
@@ -4432,6 +4621,7 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
             <textarea value={form.instructions} onChange={e=>set('instructions',e.target.value)}
               placeholder="e.g. Cold hand wash. Customisation available." style={{ minHeight:60 }} />
           </div>
+          <div className="adm-form-section"><span>Pricing &amp; Options</span></div>
           <div className="adm-field">
             <label>Badge <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(optional)</span></label>
             <input value={form.badge} onChange={e=>set('badge',e.target.value)} placeholder="Bestseller / New Arrival / Limited Edition" />
@@ -4458,14 +4648,22 @@ const ProductForm = ({ product, sections, totalProducts, onSave, onCancel }) => 
               ))}
             </select>
           </div>
-          <div className="adm-field full">
+          <div className="adm-form-section"><span>Visibility &amp; Homepage</span></div>
+          <div className="adm-field">
             <label>Visibility</label>
             <AdmToggle value={form.is_visible} onChange={v=>set('is_visible',v)}
               label={form.is_visible ? 'Visible on storefront' : 'Hidden from storefront'} />
           </div>
+          <div className="adm-field">
+            <label>★ Feature on Homepage <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(shown in the hero)</span></label>
+            <AdmToggle value={form.is_featured} onChange={v=>set('is_featured',v)}
+              label={form.is_featured ? 'Featured in hero' : 'Not featured'} />
+          </div>
         </div>
 
         <hr className="adm-divider" />
+
+        <div className="adm-form-section" style={{ marginBottom:14 }}><span>Images &amp; Media</span></div>
 
         <div className="adm-field">
           <label>Product Images <span style={{ textTransform:'none', letterSpacing:0, color:'var(--text-dim)' }}>(first = cover · JPG, PNG, WebP)</span></label>
@@ -4806,6 +5004,7 @@ const AdminApp = () => {
   const [authed,      setAuthed]      = React.useState(false);
   const [loading,     setLoading]     = React.useState(true);
   const [page,        setPage]        = React.useState('overview');
+  const [drawerOpen,  setDrawerOpen]  = React.useState(false);
   const [editProduct, setEditProduct] = React.useState(null);
   const [products,    setProducts]    = React.useState([]);
   const [sections,    setSections]    = React.useState([]);
@@ -4897,6 +5096,11 @@ const AdminApp = () => {
     await loadAll();
   };
 
+  const toggleFeatured = async (docId, currentFeatured) => {
+    await fdb().collection('products').doc(docId).update({ is_featured: !currentFeatured });
+    await loadAll();
+  };
+
   const addSection = async (name) => {
     await fdb().collection('sections').add({ name, display_order: sections.length });
     await loadAll();
@@ -4944,7 +5148,8 @@ const AdminApp = () => {
   ];
 
   return (
-    <div className="admin-layout">
+    <div className={"admin-layout"+(drawerOpen?' drawer-open':'')}>
+      <div className="adm-drawer-backdrop" onClick={()=>setDrawerOpen(false)} />
       <aside className="adm-sidebar">
         <div className="adm-sidebar-logo">
           <h2>Aman <em>Creations</em></h2>
@@ -4953,7 +5158,7 @@ const AdminApp = () => {
         <nav className="adm-nav">
           {nav.map(n => (
             <button key={n.id} className={"adm-nav-item "+(page===n.id&&!editProduct?'active':'')}
-              onClick={()=>{ setPage(n.id); setEditProduct(null); }}>
+              onClick={()=>{ setPage(n.id); setEditProduct(null); setDrawerOpen(false); }}>
               {n.label}
             </button>
           ))}
@@ -4967,6 +5172,7 @@ const AdminApp = () => {
 
       <div className="adm-main">
         <div className="adm-topbar">
+          <button className="adm-hamburger" onClick={()=>setDrawerOpen(o=>!o)} aria-label="Menu">☰</button>
           <div className="adm-topbar-title">
             {editProduct ? (editProduct._isNew?'New Product':'Edit Product') : nav.find(n=>n.id===page)?.label}
           </div>
@@ -4980,6 +5186,7 @@ const AdminApp = () => {
               onEdit={p=>setEditProduct(p)}
               onDelete={deleteProduct}
               onToggle={toggleProduct}
+              onToggleFeatured={toggleFeatured}
               onAdd={()=>setEditProduct({ _isNew:true })}
             />
           )}
