@@ -3584,9 +3584,14 @@ const CartSidebar = ({ open, onClose, items, onQty, onRemove, onCheckout }) => {
             items.map((it) => (
               <div key={it.id} className="cart-item">
                 <div className="cart-item-img">
-                  {it.imageUrl
-                    ? <img src={it.imageUrl} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
-                    : <ProductImage motif={it.motif} palette={it.palette} variant={0} />}
+                  {(() => {
+                    const baseId = it.id.split('_')[0];
+                    const prod = (window.PRODUCTS || []).find(p => p.id === baseId);
+                    const imgUrl = (prod && prod.imageData && prod.imageData[0]) || it.imageUrl;
+                    return imgUrl
+                      ? <img src={imgUrl} alt={it.name} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                      : <ProductImage motif={it.motif} palette={it.palette} variant={0} />;
+                  })()}
                 </div>
                 <div className="cart-item-body">
                   <div className="cart-item-name">{it.name}</div>
