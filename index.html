@@ -32,6 +32,9 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); }
+/* Clip horizontal overflow at the root so off-canvas panels (cart, menu) that are
+   parked off-screen right via translateX(100%) can't widen the page on mobile. */
+html { overflow-x: hidden; }
 body {
   font-family: var(--font-body);
   font-weight: 400;
@@ -39,6 +42,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Noise grain overlay */
@@ -190,6 +196,7 @@ section { position: relative; }
   font-weight: 500;
   letter-spacing: .01em;
   color: var(--text);
+  white-space: nowrap;
 }
 .nav-logo-mark em { color: var(--gold); font-style: italic; }
 .nav-logo-sub {
@@ -1375,7 +1382,7 @@ html.js-reveal-ready .reveal-stagger.visible > * { opacity: 1; transform: transl
 /* ───────── Mobile menu ───────── */
 .mobile-menu {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 320px;
+  width: 320px; max-width: 86vw;
   background: #0a0908;
   z-index: 199;
   transform: translateX(100%);
@@ -1507,6 +1514,12 @@ html.js-reveal-ready .reveal-stagger.visible > * { opacity: 1; transform: transl
   <style>
     /* â”€â”€ Mobile fixes â”€â”€ */
     @media (max-width: 600px) {
+      /* Navbar — keep logo on one line and fit the action buttons */
+      .nav-inner { gap: 10px !important; }
+      .nav-logo-mark { font-size: 19px !important; }
+      .nav-actions { gap: 7px !important; }
+      .nav-actions .icon-btn { width: 36px !important; height: 36px !important; }
+
       /* Hero — mobile-first: text centered, one elegant photo card below */
       .hero { min-height: auto !important; padding-top: 92px !important; padding-bottom: 40px !important; }
       .hero-grid { gap: 36px !important; text-align: center !important; }
@@ -1516,12 +1529,16 @@ html.js-reveal-ready .reveal-stagger.visible > * { opacity: 1; transform: transl
       .hero-ctas { margin-top: 26px !important; justify-content: center !important; width: 100%; }
       .hero-ctas .btn { flex: 1 1 auto; justify-content: center; }
       .hero-meta { margin-top: 30px !important; justify-content: center !important; flex-wrap: wrap !important; gap: 18px 30px !important; }
-      /* Show the hero visual on mobile as a single centered card (was hidden) */
-      .hero-visual { display: flex !important; aspect-ratio: 1/1 !important; max-width: 320px !important; margin: 0 auto !important; }
+      /* Show the hero visual on mobile as a single compact centered card (was hidden) */
+      .hero-visual { display: flex !important; aspect-ratio: 4/5 !important; width: 100% !important; max-width: 244px !important; margin: 4px auto 0 !important; }
       .hero-card-bg1, .hero-card-bg2 { display: none !important; }
       .hero-card-main { inset: 0 !important; }
-      .hero-decor-ring { width: 240px !important; height: 240px !important; top: -6% !important; right: -8% !important; }
-      .hero-ornament { background-size: 160px 160px !important; }
+      .hero-card-chip { left: 10px; right: 10px; bottom: 10px; padding: 9px 12px; }
+      .hero-chip-name { font-size: 14px; }
+      .hero-chip-price { font-size: 15px; }
+      .hero-decor-ring { width: 200px !important; height: 200px !important; top: -7% !important; right: -10% !important; }
+      .hero-ornament { background-size: 150px 150px !important; }
+      .scroll-indicator { display: none !important; }
 
       /* Reduce all section padding */
       .section-pad { padding: 48px 0 !important; }
