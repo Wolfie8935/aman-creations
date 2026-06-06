@@ -674,6 +674,24 @@ section { position: relative; }
 .product-card-add { border-radius: 7px; }
 .product-card-add:hover { box-shadow: 0 8px 20px -10px rgba(201,168,76,.7); }
 
+/* Inline qty stepper on product card */
+.card-qty-stepper {
+  display: inline-flex; align-items: center; gap: 0;
+  border: 1px solid var(--gold); border-radius: 7px; overflow: hidden;
+}
+.card-qty-stepper button {
+  background: transparent; border: none; color: var(--gold);
+  width: 34px; height: 36px; font-size: 16px; cursor: pointer;
+  transition: background .18s;
+  display: flex; align-items: center; justify-content: center;
+}
+.card-qty-stepper button:hover { background: var(--gold); color: #18130a; }
+.card-qty-stepper span {
+  min-width: 28px; text-align: center; color: var(--gold);
+  font-size: 13px; font-weight: 600; letter-spacing: .04em;
+  pointer-events: none;
+}
+
 /* ───────── Offers ───────── */
 .offers-grid {
   display: grid;
@@ -3485,12 +3503,12 @@ const buildOrderMessage = (orderId, customer, items, total) => {
 };
 
 // ───────── Product Card ─────────
-const ProductCard = ({ product, wished, onWish, onAddToCart, onOpen }) => {
+const ProductCard = ({ product, wished, onWish, onAddToCart, onOpen, cart, onQty }) => {
   const [imgIdx, setImgIdx] = React.useState(0);
   React.useEffect(() => {
     if (product.images <= 1) return;
-    // Don't autoplay on initial render; just allow tap navigation on dots
   }, []);
+  const cartQty = (cart || []).find(it => it.id === product.id)?.qty || 0;
 
   return (
     <article className="product-card" onClick={() => onOpen(product)}>
@@ -3525,12 +3543,20 @@ const ProductCard = ({ product, wished, onWish, onAddToCart, onOpen }) => {
         <p className="product-card-desc">{product.short}</p>
         <div className="product-card-foot">
           <div className="product-price"><span className="rupee">₹</span>{product.price.toLocaleString("en-IN")}</div>
-          <button
-            className="product-card-add"
-            onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
-          >
-            Add <Icon name="plus" size={12} />
-          </button>
+          {cartQty > 0 ? (
+            <div className="card-qty-stepper" onClick={e => e.stopPropagation()}>
+              <button onClick={() => onQty(product.id, cartQty - 1)} aria-label="decrease">−</button>
+              <span>{cartQty}</span>
+              <button onClick={() => onQty(product.id, cartQty + 1)} aria-label="increase">+</button>
+            </div>
+          ) : (
+            <button
+              className="product-card-add"
+              onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
+            >
+              Add <Icon name="plus" size={12} />
+            </button>
+          )}
         </div>
       </div>
     </article>
@@ -4015,9 +4041,10 @@ const _OrigPC = window.ProductCard;
 const _OrigPM = window.ProductModal;
 
 window.ProductCard = (props) => {
-  const { product, wished, onWish, onAddToCart, onOpen } = props;
+  const { product, wished, onWish, onAddToCart, onOpen, cart, onQty } = props;
   const [imgIdx, setImgIdx] = React.useState(0);
   const urls = product.imageData;
+  const cartQty = (cart || []).find(it => it.id === product.id)?.qty || 0;
   if (!urls || !urls.length) return <_OrigPC {...props} />;
   return (
     <article className="product-card" onClick={() => onOpen(product)}>
@@ -4044,9 +4071,17 @@ window.ProductCard = (props) => {
         <p className="product-card-desc">{product.short}</p>
         <div className="product-card-foot">
           <div className="product-price"><span className="rupee">₹</span>{product.price.toLocaleString('en-IN')}</div>
-          <button className="product-card-add" onClick={e => { e.stopPropagation(); onAddToCart(product); }}>
-            Add <Icon name="plus" size={12} />
-          </button>
+          {cartQty > 0 ? (
+            <div className="card-qty-stepper" onClick={e => e.stopPropagation()}>
+              <button onClick={() => onQty(product.id, cartQty - 1)} aria-label="decrease">−</button>
+              <span>{cartQty}</span>
+              <button onClick={() => onQty(product.id, cartQty + 1)} aria-label="increase">+</button>
+            </div>
+          ) : (
+            <button className="product-card-add" onClick={e => { e.stopPropagation(); onAddToCart(product); }}>
+              Add <Icon name="plus" size={12} />
+            </button>
+          )}
         </div>
       </div>
     </article>
@@ -5677,6 +5712,8 @@ const App = () => {
                   onWish={t.showWishlist ? toggleWish : () => {}}
                   onAddToCart={addToCart}
                   onOpen={setModalProduct}
+                  cart={cart}
+                  onQty={updateQty}
                 />
               ))}
             </div>
